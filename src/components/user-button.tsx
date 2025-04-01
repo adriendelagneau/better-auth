@@ -45,12 +45,7 @@ const UserButton = () => {
           </Link>
         </DropdownMenuItem>
 
-        <DropdownMenuItem>
-          <Link href={"/studio"} className="flex w-full gap-x-2">
-            <ClapperboardIcon className="mr-2 h-4 w-4" />
-            Studio
-          </Link>
-        </DropdownMenuItem>
+     
         <LogoutButton>
           <DropdownMenuItem className="cursor-pointer">
             <LogOutIcon className="mr-2 h-4 w-4" />
