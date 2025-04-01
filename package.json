@@ -44,6 +44,7 @@
     "eslint-config-prettier": "^10.1.1",
     "prisma": "^6.5.0",
     "tailwindcss": "^4.1.0",
-    "typescript": "^5.8.2"
+    "typescript": "^5.8.2",
+    "@types/bun": "latest"
   }
 }
