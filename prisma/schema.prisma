@@ -1,9 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -23,6 +17,7 @@ model User {
   updatedAt     DateTime
   sessions      Session[]
   accounts      Account[]
+  videos        Video[]
 
   @@map("user")
 }
@@ -78,4 +73,42 @@ model Category {
   description String?  
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+  videos      Video[]
+
+  @@map("category")
 }
+
+// Enum definition
+enum VideoVisibility {
+  private
+  public
+}
+
+model Video {
+  id                String          @id @default(uuid()) // Automatically generate the UUID
+  title             String
+  description       String?
+  muxStatus         String?
+  muxAssetId        String?         @unique
+  muxUploadId       String?         @unique
+  muxPlaybackId     String?         @unique
+  muxTrackId        String?         @unique
+  muxTrackStatus    String?
+  thumbnailUrl      String?
+  thumbnailKey      String?
+  previewUrl        String?
+  previewKey        String?
+  duration          Int             @default(0) // Duration in seconds
+  visibility        VideoVisibility @default(private) // Enum used here
+  userId            String
+  categoryId        String?
+
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @updatedAt
+
+  user              User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  category          Category?       @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+
+  @@map("video") // The table name in the database
+}
+
