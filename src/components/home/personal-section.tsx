@@ -8,7 +8,7 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
-import { authClient } from "@/lib/auth-client";
+// import { authClient } from "@/lib/auth-client";
 import {  HistoryIcon,  ListVideoIcon, ThumbsUpIcon } from "lucide-react";
 import Link from "next/link";
 import React from "react";
@@ -36,8 +36,8 @@ const items = [
   },
 ];
 const PersonalSection = () => {
-    const { data: session} = authClient.useSession();
-    const user = session?.user;
+    // const { data: session} = authClient.useSession();
+    // const user = session?.user;
   return (
     <SidebarGroup>
       <SidebarGroupLabel>For You</SidebarGroupLabel>
