@@ -70,9 +70,9 @@ export const VideoSection = ({ videos }: { videos: Video[] }) => {
                 <TableCell className="text-sm truncate">
                   {format(new Date(video.createdAt), "d MMM yyyy")}
                 </TableCell>
-                <TableCell className="text-right text-sm">{video.views || 0}</TableCell>
-                <TableCell className="text-right text-sm">{video.comments || 0}</TableCell>
-                <TableCell className="text-right text-sm pr-6">{video.likes || 0}</TableCell>
+                <TableCell className="text-right text-sm">{24}</TableCell>
+                <TableCell className="text-right text-sm">{7}</TableCell>
+                <TableCell className="text-right text-sm pr-6">{10}</TableCell>
               </TableRow>
             </Link>
           ))}
