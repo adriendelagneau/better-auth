@@ -32,7 +32,7 @@ export default function ForgotPassword() {
     try {
       await authClient.forgetPassword(
         {
-          email: data.email.trim(), // Auto-trim email
+          email: data.email.trim(), 
           redirectTo: "/reset-password",
         },
         {

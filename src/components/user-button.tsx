@@ -38,14 +38,13 @@ const UserButton = () => {
         </Avatar>
       </DropdownMenuTrigger>
       <DropdownMenuContent className="w-40" align="end">
-        <DropdownMenuItem>
-          <Link href={"/profile"} className="flex w-full gap-x-2">
+        <Link href={"/profile"} className="flex gap-x-2">
+          <DropdownMenuItem className="w-full cursor-pointer">
             <ClapperboardIcon className="mr-2 h-4 w-4" />
             Profile
-          </Link>
-        </DropdownMenuItem>
+          </DropdownMenuItem>
+        </Link>
 
-     
         <LogoutButton>
           <DropdownMenuItem className="cursor-pointer">
             <LogOutIcon className="mr-2 h-4 w-4" />
