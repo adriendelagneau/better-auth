@@ -31,7 +31,7 @@ const StudioUploadModal = () => {
 
   const onSuccess = () => {
     if (!videoId) return;
-    router.push(`/studio/videos/${videoId}`);
+    router.replace(`/studio/videos/${videoId}`);
   };
 
   return (

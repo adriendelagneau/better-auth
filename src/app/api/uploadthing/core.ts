@@ -63,7 +63,7 @@ export const ourFileRouter = {
       await db.video.update({
         where: { id: metadata.videoId },
         data: {
-          thumbnailUrl: file.url,
+          thumbnailUrl: file.ufsUrl,
           thumbnailKey: file.key,
         },
       });

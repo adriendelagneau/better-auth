@@ -1,15 +1,12 @@
+import React from "react";
 
-
-interface SingleVideoProps {
-  params: Promise<{ videoId: string }>;
-}
-
-const SingleVideoPage = async ({ params }: SingleVideoProps) => {
-  const { videoId } = await params;
-
+const page = () => {
   return (
-   <div>{videoId}</div>
+    <div>
+      too
+    </div>
   );
 };
 
-export default SingleVideoPage;
+export default page;
+

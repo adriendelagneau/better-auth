@@ -3,6 +3,8 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
+    "dev:all": "concurrently \"bun run dev:webhook\" \"bun run dev\"",
+    "dev:webhook": "ngrok http --url=starling-nearby-swift.ngrok-free.app 3000",
     "dev": "next dev",
     "build": "prisma generate && next build",
     "start": "next start",
@@ -24,6 +26,7 @@
     "better-auth": "^1.2.5",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
+    "concurrently": "^9.1.2",
     "date-fns": "^4.1.0",
     "embla-carousel-react": "^8.5.2",
     "lucide-react": "^0.486.0",
