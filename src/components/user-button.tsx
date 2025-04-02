@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import {  LogOutIcon, User2Icon, UserRound } from "lucide-react";
+import {  ClapperboardIcon, LogOutIcon, User2Icon, UserRound } from "lucide-react";
 import LogoutButton from "./logout-button";
 import {
   DropdownMenu,
@@ -42,6 +42,13 @@ const UserButton = () => {
           <DropdownMenuItem className="w-full cursor-pointer">
             <User2Icon className="mr-2 h-4 w-4" />
             Profile
+          </DropdownMenuItem>
+        </Link>
+
+        <Link href={"/studio"} className="flex gap-x-2">
+          <DropdownMenuItem className="w-full cursor-pointer">
+            <ClapperboardIcon className="mr-2 h-4 w-4" />
+            Studio
           </DropdownMenuItem>
         </Link>
 
