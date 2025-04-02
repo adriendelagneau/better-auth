@@ -44,7 +44,7 @@ const StudioUploadModal = () => {
         )}
       </ResponsiveModal>
 
-      <Button variant={"secondary"} onClick={handleCreateVideo} disabled={isPending}>
+      <Button variant={"secondary"} onClick={handleCreateVideo} disabled={isPending} className="cursor-pointer">
         {isPending ? <Loader2Icon className="animate-spin" /> : <PlusIcon />}
         Create
       </Button>

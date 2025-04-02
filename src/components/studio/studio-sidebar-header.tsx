@@ -44,7 +44,7 @@ const StudioSidebarHeader =  ({user}: StudioSidebarHeaderProps) => {
         <UserAvatar
           imageUrl={user?.image || "/avatar-default.png"}
           name={user?.name ?? "John"}
-          className="size-[112px] hover:opacity:80 transition"
+          className="size-[112px] hover:opacity:80 "
           //   onClick={() => {}}
         />
       </Link>

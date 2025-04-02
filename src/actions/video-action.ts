@@ -4,6 +4,7 @@ import { getUser } from "@/lib/auth-session";
 import db from "@/lib/prisma";
 
 import Mux from "@mux/mux-node";
+import { Video } from "@prisma/client";
 
 const mux = new Mux({
   tokenId: process.env.MUX_TOKEN_ID!,
@@ -43,3 +44,25 @@ export async function createVideo() {
     throw new Error("Failed to create video");
   }
 }
+
+
+
+export async function getVideos(): Promise<Video[]> {
+  const user = await getUser();
+  if (!user) {
+    throw new Error("Unauthorized");
+  }
+
+  try {
+    const videos = await db.video.findMany({
+      where: { userId: user.id }, // Fetch only the logged-in user's videos
+      orderBy: { createdAt: "desc" }, // Sort by latest videos first
+    });
+
+    return videos;
+  } catch (error) {
+    console.error("Error fetching videos:", error);
+    throw new Error("Failed to fetch videos");
+  }
+}
+

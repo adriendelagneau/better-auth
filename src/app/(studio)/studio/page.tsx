@@ -1,9 +1,13 @@
+import { getVideos } from "@/actions/video-action";
+import { VideoSection } from "@/components/studio/videos-section";
 import React from "react";
 
-const StudioPage = () => {
+const StudioPage = async () => {
+
+  const videos = await getVideos();
   return (
     <div>
-      StudioPage
+      <VideoSection videos={videos}/>
     </div>
   );
 };
