@@ -4,6 +4,7 @@ import { SidebarProvider } from "@/components/ui/sidebar";
 import { getUser } from "@/lib/auth-session";
 
 
+
 export default async function StudioLayout({
   children,
 }: Readonly<{

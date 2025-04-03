@@ -140,6 +140,19 @@ export async function removeVideo(videoId: string) {
   }
 }
 
+export async function updateVideoThumbnail(videoId: string, thumbnailUrl: string) {
+  try {
+    await db.video.update({
+      where: { id: videoId },
+      data: { thumbnailUrl },
+    });
+  } catch (error) {
+    console.error("Failed to update video thumbnail:", error);
+    throw new Error("Failed to update video thumbnail");
+  }
+}
+
+
 // // ✅ Generate Thumbnail (based on Mux API)
 // export async function generateThumbnail(videoId: string) {
 //   const user = await getUser();

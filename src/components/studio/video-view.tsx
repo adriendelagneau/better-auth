@@ -3,12 +3,33 @@
 import React, { useState, useTransition } from "react";
 import { Category, Video } from "@prisma/client"; // ✅ Import type
 import { Button } from "../ui/button";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "../ui/dropdown-menu";
-import { CopyCheckIcon, CopyIcon, GlobeIcon, ImagePlusIcon, LockIcon, MoreVerticalIcon, RotateCcwIcon, SparkleIcon, Trash2Icon } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "../ui/dropdown-menu";
+import {
+  CopyCheckIcon,
+  CopyIcon,
+  GlobeIcon,
+  ImagePlusIcon,
+  LockIcon,
+  MoreVerticalIcon,
+  RotateCcwIcon,
+  SparkleIcon,
+  Trash2Icon,
+} from "lucide-react";
 import { Form, FormControl, FormField, FormItem, FormLabel } from "../ui/form";
 import { Input } from "../ui/input";
 import Image from "next/image";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "../ui/select";
 import Link from "next/link";
 import { snakeCaseToTitle } from "@/lib/utils";
 import { THUMBNAIL_FALLBACK } from "@/constants";
@@ -21,7 +42,7 @@ import VideoPlayer from "./video-player";
 import { videoUpdateSchema } from "@/lib/zod";
 import { toast } from "sonner";
 import { removeVideo, updateVideo } from "@/actions/video-action";
-
+import ThumbnailUploadModal from "../video/thumbnail-upload-modal";
 
 interface VideoViewProps {
   video: Video;
@@ -29,75 +50,76 @@ interface VideoViewProps {
 }
 
 const VideoView = ({ video, categories }: VideoViewProps) => {
-    const router = useRouter();
+  const router = useRouter();
 
-    // TODO: Change if not deployed on Vercell
-    const fullUrl = `${process.env.VRECEL_URL || "http://localhost:3000"}/videos/${video.id}`;
-    const [isCopied, setIsCopied] = useState(false);
-    const [thumbnailOpen, setThumbnailOpen] = useState(false);
-    const [isPending, startTransition] = useTransition();
+  // TODO: Change if not deployed on Vercell
+  const fullUrl = `${process.env.VERCEL_URL || "http://localhost:3000"}/videos/${video.id}`;
+  const [isCopied, setIsCopied] = useState(false);
+  const [thumbnailOpen, setThumbnailOpen] = useState(false);
+  const [isPending, startTransition] = useTransition();
 
-    console.log(thumbnailOpen);
+  const form = useForm<z.infer<typeof videoUpdateSchema>>({
+    resolver: zodResolver(videoUpdateSchema),
+    defaultValues: {
+      ...video,
+      description: video.description ?? undefined,
+      thumbnailUrl: video.thumbnailUrl ?? undefined,
+      categoryId: video.categoryId ?? undefined,
+    },
+  });
 
-    const form = useForm<z.infer<typeof videoUpdateSchema>>({
-        resolver: zodResolver(videoUpdateSchema),
-        defaultValues: {
-          ...video,
-          description: video.description ?? undefined,
-          thumbnailUrl: video.thumbnailUrl ?? undefined,
-          categoryId: video.categoryId ?? undefined,
-        },
-      });
-    
+  const onCopy = () => {
+    navigator.clipboard.writeText(fullUrl);
+    setIsCopied(true);
 
+    setTimeout(() => {
+      setIsCopied(false);
+    }, 2000);
+  };
 
-      const onCopy = () => {
-        navigator.clipboard.writeText(fullUrl);
-        setIsCopied(true);
-    
-        setTimeout(() => {
-          setIsCopied(false);
-        }, 2000);
-      };
-
-      const onSubmit = (data: z.infer<typeof videoUpdateSchema>) => {
-        startTransition(async () => {
-          try {
-            await updateVideo(video.id, {
-              ...data,
-              description: data.description || "",
-              categoryId: data.categoryId || "",
-            });
-            toast("Video updated");
-          } catch (err) {
-            console.log(err);
-            toast.error("Something went wrong");
-          }
+  const onSubmit = (data: z.infer<typeof videoUpdateSchema>) => {
+    startTransition(async () => {
+      try {
+        await updateVideo(video.id, {
+          ...data,
+          description: data.description || "",
+          categoryId: data.categoryId || "",
         });
-      };
-    
-      // ✅ Handle video deletion
-      const onDelete = () => {
-        startTransition(async () => {
-          try {
-            await removeVideo(video.id);
-            toast.success("Video deleted");
-            router.push("/studio");
-          } catch (err) {
-            console.log(err);
-            toast("Something went wrong");
-          }
-        });
-      };
+        toast("Video updated");
+      } catch (err) {
+        console.log(err);
+        toast.error("Something went wrong");
+      }
+    });
+  };
+
+  // ✅ Handle video deletion
+  const onDelete = () => {
+    startTransition(async () => {
+      try {
+        await removeVideo(video.id);
+        toast.success("Video deleted");
+        router.push("/studio");
+      } catch (err) {
+        console.log(err);
+        toast("Something went wrong");
+      }
+    });
+  };
 
   return (
-   <>
+    <>
+      <ThumbnailUploadModal
+        open={thumbnailOpen}
+        onOpenChange={setThumbnailOpen}
+        videoId={video.id}
+      />
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)}>
-          <div className="flex items-center justify-between mb-6">
+          <div className="mb-6 flex items-center justify-between">
             <div>
               <h1 className="text-2xl font-bold">Videos details</h1>
-              <p className="text-xs text-muted-foreground">
+              <p className="text-muted-foreground text-xs">
                 Mange your video details
               </p>
             </div>
@@ -112,10 +134,8 @@ const VideoView = ({ video, categories }: VideoViewProps) => {
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
-                  <DropdownMenuItem
-                    onClick={() => onDelete()}
-                  >
-                    <Trash2Icon className="size-4 mr-2" />
+                  <DropdownMenuItem onClick={() => onDelete()}>
+                    <Trash2Icon className="mr-2 size-4" />
                     Delete
                   </DropdownMenuItem>
                 </DropdownMenuContent>
@@ -123,7 +143,7 @@ const VideoView = ({ video, categories }: VideoViewProps) => {
             </div>
           </div>
 
-          <div className="grid grid-col-1 lg:grid-cols-5 gap-6">
+          <div className="grid-col-1 grid gap-6 lg:grid-cols-5">
             <div className="space-y-8 lg:col-span-3">
               <FormField
                 control={form.control}
@@ -151,8 +171,8 @@ const VideoView = ({ video, categories }: VideoViewProps) => {
                       <Textarea
                         {...field}
                         value={field.value ?? ""}
-                     rows={6} //  row => no effect ? 
-                        className="resize-none pr-10 h-56"
+                        rows={6} //  row => no effect ?
+                        className="h-56 resize-none pr-10"
                         placeholder="Add a description to your video"
                       />
                     </FormControl>
@@ -166,7 +186,7 @@ const VideoView = ({ video, categories }: VideoViewProps) => {
                   <FormItem>
                     <FormLabel></FormLabel>
                     <FormControl>
-                      <div className="p-0.5 border border-dashed  border-neutral-400 relative h-[84px] w-[135px] group">
+                      <div className="group relative h-[84px] w-[135px] border border-dashed border-neutral-400 p-0.5">
                         <Image
                           src={video.thumbnailUrl || THUMBNAIL_FALLBACK}
                           className="object-cover"
@@ -178,7 +198,7 @@ const VideoView = ({ video, categories }: VideoViewProps) => {
                             <Button
                               type="button"
                               size={"icon"}
-                              className="bg-black/50 hover:bg-black/50 absolute top-1 right-1 rounded-full opacity-100 md:opacity-0 group-hover:opacity-100 duration-300 size-7"
+                              className="absolute top-1 right-1 size-7 rounded-full bg-black/50 opacity-100 duration-300 group-hover:opacity-100 hover:bg-black/50 md:opacity-0"
                             >
                               <MoreVerticalIcon className="text-white" />
                             </Button>
@@ -189,17 +209,23 @@ const VideoView = ({ video, categories }: VideoViewProps) => {
                               onClick={() => setThumbnailOpen(true)}
                               className="cursor-pointer"
                             >
-                              <ImagePlusIcon className="size-4 mr-1" />
+                              <ImagePlusIcon className="mr-1 size-4" />
                               Change
                             </DropdownMenuItem>
 
-                            <DropdownMenuItem onClick={() => {}} className="cursor-pointer">
-                              <SparkleIcon className="size-4 mr-1" />
+                            <DropdownMenuItem
+                              onClick={() => {}}
+                              className="cursor-pointer"
+                            >
+                              <SparkleIcon className="mr-1 size-4" />
                               AI-generate
                             </DropdownMenuItem>
 
-                            <DropdownMenuItem onClick={() => {}} className="cursor-pointer">
-                              <RotateCcwIcon className="size-4 mr-1" />
+                            <DropdownMenuItem
+                              onClick={() => {}}
+                              className="cursor-pointer"
+                            >
+                              <RotateCcwIcon className="mr-1 size-4" />
                               Restore
                             </DropdownMenuItem>
                           </DropdownMenuContent>
@@ -237,15 +263,15 @@ const VideoView = ({ video, categories }: VideoViewProps) => {
               />
             </div>
             <div className="flex flex-col gap-y-8 lg:col-span-2">
-              <div className="flex flex-col gap-4 bg-[#f9f9f9] rounded-xl overflow-hidden h-fit">
-                <div className="aspect-video overflow-hidden relative">
+              <div className="flex h-fit flex-col gap-4 overflow-hidden rounded-xl bg-[#f9f9f9]">
+                <div className="relative aspect-video overflow-hidden">
                   <VideoPlayer
                     playbackId={video.muxPlaybackId}
                     thumbnailUrl={video.thumbnailUrl}
                   />
                 </div>
-                <div className="p-4 flex flex-col  gap-y-6">
-                  <div className="flex justify-between items-center gap-x-2">
+                <div className="flex flex-col gap-y-6 p-4">
+                  <div className="flex items-center justify-between gap-x-2">
                     <div className="flex flex-col gap-y-1">
                       <p className="text-muted-foreground text-sm">
                         Video link
@@ -270,7 +296,7 @@ const VideoView = ({ video, categories }: VideoViewProps) => {
                     </div>
                   </div>
 
-                  <div className="flex justify-between items-center">
+                  <div className="flex items-center justify-between">
                     <div className="flex flex-col gap-y-1">
                       <p className="text-muted-foreground text-xs">
                         Video status
@@ -280,7 +306,7 @@ const VideoView = ({ video, categories }: VideoViewProps) => {
                       </p>
                     </div>
                   </div>
-                  <div className="flex justify-between items-center">
+                  <div className="flex items-center justify-between">
                     <div className="flex flex-col gap-y-1">
                       <p className="text-muted-foreground text-xs">
                         Subtitle status
@@ -313,13 +339,13 @@ const VideoView = ({ video, categories }: VideoViewProps) => {
                       <SelectContent>
                         <SelectItem value="public">
                           <div className="flex">
-                            <GlobeIcon className="size-4 mr-2" />
+                            <GlobeIcon className="mr-2 size-4" />
                             Public
                           </div>
                         </SelectItem>
                         <SelectItem value="private">
                           <div className="flex">
-                            <LockIcon className="size-4 mr-2" />
+                            <LockIcon className="mr-2 size-4" />
                             Private
                           </div>
                         </SelectItem>
@@ -332,7 +358,7 @@ const VideoView = ({ video, categories }: VideoViewProps) => {
           </div>
         </form>
       </Form>
-   </>
+    </>
   );
 };
 

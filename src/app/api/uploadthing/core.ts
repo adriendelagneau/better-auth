@@ -8,6 +8,7 @@ import { getUser } from "@/lib/auth-session";
 
 const f = createUploadthing();
 
+console.log("otfiler");
 export const ourFileRouter = {
   thumbnailUploader: f({
     image: {
