@@ -12,7 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from ".
 import Link from "next/link";
 import { snakeCaseToTitle } from "@/lib/utils";
 import { THUMBNAIL_FALLBACK } from "@/constants";
-import { Textarea } from "../ui/textarea";
+import { Textarea } from "@/components/ui/textarea";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -36,6 +36,8 @@ const VideoView = ({ video, categories }: VideoViewProps) => {
     const [isCopied, setIsCopied] = useState(false);
     const [thumbnailOpen, setThumbnailOpen] = useState(false);
     const [isPending, startTransition] = useTransition();
+
+    console.log(thumbnailOpen);
 
     const form = useForm<z.infer<typeof videoUpdateSchema>>({
         resolver: zodResolver(videoUpdateSchema),
@@ -100,7 +102,7 @@ const VideoView = ({ video, categories }: VideoViewProps) => {
               </p>
             </div>
             <div className="flex items-center gap-x-2">
-              <Button type="submit" disabled={form.formState.isSubmitting}>
+              <Button type="submit" disabled={isPending}>
                 Save
               </Button>
               <DropdownMenu>
@@ -111,7 +113,7 @@ const VideoView = ({ video, categories }: VideoViewProps) => {
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
                   <DropdownMenuItem
-                    onClick={() => onDelete(video.id)}
+                    onClick={() => onDelete()}
                   >
                     <Trash2Icon className="size-4 mr-2" />
                     Delete
@@ -149,8 +151,8 @@ const VideoView = ({ video, categories }: VideoViewProps) => {
                       <Textarea
                         {...field}
                         value={field.value ?? ""}
-                        rows={10}
-                        className="resize-none pr-10"
+                     rows={6} //  row => no effect ? 
+                        className="resize-none pr-10 h-56"
                         placeholder="Add a description to your video"
                       />
                     </FormControl>
