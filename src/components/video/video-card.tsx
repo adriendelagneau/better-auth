@@ -14,9 +14,10 @@ const VideoCard: React.FC<VideoCardProps> = ({ video }) => {
         <Image
           src={video.thumbnailUrl || "/placeholder.jpg"} // Uses Next.js Image optimization
           alt={video.title}
-          layout="fill"
-          objectFit="cover"
-          className="rounded-lg"
+          width={500} // Define the width explicitly
+        height={300} // Define the height explicitly
+         
+          className="rounded-lg object-cover"
         />
       </div>
 

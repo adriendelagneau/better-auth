@@ -211,8 +211,9 @@ export default function SignUp() {
                     <Image
                       src={imagePreview}
                       alt="Profile preview"
-                      layout="fill"
-                      objectFit="cover"
+                      width={500} // Define the width explicitly
+                      height={300} // Define the height explicitly
+                   className="object-cover"
                     />
                   </div>
                 )}

@@ -9,10 +9,12 @@ const HomePage = async ({
 }: {
   searchParams: { [key: string]: string | string[] | undefined };
 }) => {
+
+  const sP = await searchParams;
   const search =
-    typeof searchParams.search === "string" ? searchParams.search : undefined;
-  
-    const categories = await GetCategory();
+    typeof sP?.search === "string" ? sP.search : undefined;
+
+  const categories = await GetCategory();
   const videos = await getFilteredVideos({ limit: 12 });
 
   return (
@@ -21,7 +23,7 @@ const HomePage = async ({
         <FilterCarousel categories={categories} />
       </Suspense>
 
-      <VideoList initialVideos={videos.videos} search={search}/>
+      <VideoList initialVideos={videos.videos} search={search} />
     </div>
   );
 };
