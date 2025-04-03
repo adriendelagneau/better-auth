@@ -47,7 +47,7 @@ export async function createVideo() {
 
 
 
-export async function getVideos(): Promise<Video[]> {
+export async function getUserVideos(): Promise<Video[]> {
   const user = await getUser();
   if (!user) {
     throw new Error("Unauthorized");
@@ -151,7 +151,51 @@ export async function updateVideoThumbnail(videoId: string, thumbnailUrl: string
     throw new Error("Failed to update video thumbnail");
   }
 }
+export async function getFilteredVideos({
+  cursor,
+  limit = 10,
+  categoryId,
+  query,
+  userId,
+}: {
+  cursor?: string;
+  limit?: number;
+  categoryId?: string;
+  query?: string;
+  userId?: string;
+}) {
+  try {
+    const videos = await db.video.findMany({
+      take: limit + 1, // Fetch one extra to check if there's a next page
+      where: {
+        visibility: "public",
+        ...(categoryId ? { categoryId } : {}),
+        ...(userId ? { userId } : {}),
+        ...(query
+          ? {
+              OR: [
+                { title: { contains: query, mode: "insensitive" } },
+                { description: { contains: query, mode: "insensitive" } },
+              ],
+            }
+          : {}),
+      },
+      orderBy: { createdAt: "desc" },
+      cursor: cursor ? { id: cursor } : undefined,
+      skip: cursor ? 1 : 0,
+    });
 
+    let nextCursor = null;
+    if (videos.length > limit) {
+      nextCursor = videos.pop()?.id; // Get the last item's ID as the next cursor
+    }
+
+    return { videos, nextCursor };
+  } catch (error) {
+    console.error("Error fetching videos:", error);
+    throw new Error("Failed to fetch videos");
+  }
+}
 
 // // ✅ Generate Thumbnail (based on Mux API)
 // export async function generateThumbnail(videoId: string) {
