@@ -1,4 +1,4 @@
-import { object, string } from "zod";
+import { object, string, union } from "zod";
 
 const base64Regex = /^data:image\/[a-zA-Z]+;base64,[a-zA-Z0-9+/=]+$/;
 
@@ -50,3 +50,19 @@ export const resetPasswordSchema = object({
   message: "Passwords don't match",
   path: ["confirmPassword"],
 });
+
+
+
+
+
+import { z } from "zod";
+
+export const videoUpdateSchema = object({
+  title: string().min(1, "Title is required").max(255, "Title is too long"),
+  description: string().optional(), // description is optional and can be nullable
+  thumbnailUrl: string().url("Invalid URL").optional(),
+  visibility: union([z.literal("private"), z.literal("public")]),
+  categoryId: string().uuid("Invalid category ID").optional(),
+});
+
+
