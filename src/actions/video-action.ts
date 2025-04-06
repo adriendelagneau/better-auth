@@ -2,9 +2,10 @@
 
 import { getUser } from "@/lib/auth-session";
 import db from "@/lib/prisma";
-
+import { z } from "zod";
 import Mux from "@mux/mux-node";
-import { Video } from "@prisma/client";
+import { User, Video } from "@prisma/client";
+import { revalidatePath } from "next/cache";
 
 const mux = new Mux({
   tokenId: process.env.MUX_TOKEN_ID!,
@@ -67,22 +68,27 @@ export async function getUserVideos(): Promise<Video[]> {
 }
 
 
-export async function getVideoById(videoId: string): Promise<Video | null> {
-  const user = await getUser();
-  if (!user) {
-    throw new Error("Unauthorized");
-  }
+export interface VideoWithUser extends Video {
+  user: User;
+}
+
+export async function getVideoById(videoId: string): Promise<VideoWithUser | null> {
+  // const user = await getUser();
+  // if (!user) {
+  //   throw new Error("Unauthorized");
+  // }
 
   try {
     const video = await db.video.findUnique({
-      where: { id: videoId, userId: user.id }, // Ensure the user owns the video
+      where: { id: videoId }, // Remove `userId: user.id` if you want to allow fetching all videos
+      include: { user: true }, // ✅ Ensure user data is included
     });
 
     if (!video) {
       throw new Error("Video not found");
     }
 
-    return video;
+    return video as VideoWithUser; // ✅ Explicitly tell TypeScript that `user` exists
   } catch (error) {
     console.error("Error fetching video:", error);
     throw new Error("Failed to fetch video");
@@ -197,6 +203,8 @@ export async function getFilteredVideos({
   }
 }
 
+
+
 // // ✅ Generate Thumbnail (based on Mux API)
 // export async function generateThumbnail(videoId: string) {
 //   const user = await getUser();
@@ -262,3 +270,93 @@ export async function getFilteredVideos({
 //     throw new Error("Unable to restore thumbnail");
 //   }
 // }
+
+const videoIdSchema = z.string().uuid(); // If your videoId is a UUID
+
+export const incrementVideoView = async (videoId: string) => {
+  const parsed = videoIdSchema.safeParse(videoId);
+
+  if (!parsed.success) {
+    console.error("Invalid videoId:", parsed.error.format());
+    throw new Error("Invalid video ID");
+  }
+
+  try {
+    const updatedVideo = await db.video.update({
+      where: {
+        id: parsed.data,
+      },
+      data: {
+        videoViews: {
+          increment: 1,
+        },
+      },
+    });
+
+    revalidatePath("/videos"); // Or more specific: `/videos/${videoId}`
+    return updatedVideo;
+  } catch (error) {
+    console.error("Error incrementing video views:", error);
+    throw new Error("Failed to increment video views");
+  }
+};
+
+const toggleSubscriptionSchema = z.object({
+  creatorId: z.string(), // assuming you're using UUIDs
+});
+
+export const toggleSubscription = async (rawInput: unknown) => {
+  const parsed = toggleSubscriptionSchema.safeParse(rawInput);
+
+  if (!parsed.success) {
+    console.error(parsed.error.flatten());
+    throw new Error("Invalid data");
+  }
+
+  const { creatorId } = parsed.data;
+  const user = await getUser();
+
+  if (!user) {
+    throw new Error("Unauthorized");
+  }
+
+  if (user.id === creatorId) {
+    throw new Error("You can't subscribe to yourself!");
+  }
+
+  const existingSub = await db.subscription.findUnique({
+    where: {
+      viewerId_creatorId: {
+        viewerId: user.id,
+        creatorId,
+      },
+    },
+  });
+
+  // Toggle the subscription
+  if (existingSub) {
+    // Unsubscribe
+    await db.subscription.delete({
+      where: {
+        viewerId_creatorId: {
+          viewerId: user.id,
+          creatorId,
+        },
+      },
+    });
+    // Trigger revalidation for the creator’s page
+    revalidatePath(`/users/${creatorId}`);
+    return { status: "unsubscribed" };
+  } else {
+    // Subscribe
+    await db.subscription.create({
+      data: {
+        viewerId: user.id,
+        creatorId,
+      },
+    });
+    // Trigger revalidation for the creator’s page
+    revalidatePath(`/users/${creatorId}`);
+    return { status: "subscribed" };
+  }
+};
