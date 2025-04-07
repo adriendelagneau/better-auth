@@ -26,6 +26,7 @@ const VideoReactions = ({ video }: VideoReactionsProps) => {
     : null;
 
   const [isPending, startTransition] = useTransition();
+  console.log(isPending);
 
   const [optimisticState, updateOptimisticState] = useOptimistic(
     {
@@ -82,9 +83,9 @@ const VideoReactions = ({ video }: VideoReactionsProps) => {
     <div className="flex items-center flex-none">
       <Button
         variant="secondary"
-        className="rounded-full rounded-r-none gap-2 pr-4"
+        className="rounded-full rounded-r-none gap-2 pr-4 cursor-pointer"
         onClick={() => handleReaction("like")}
-        disabled={isPending}
+        // disabled={isPending}
       >
         <ThumbsUpIcon
           className={cn(
@@ -97,9 +98,9 @@ const VideoReactions = ({ video }: VideoReactionsProps) => {
       <Separator orientation="vertical" className="h-7" />
       <Button
         variant="secondary"
-        className="rounded-full rounded-l-none pl-3"
+        className="rounded-full rounded-l-none pl-3 cursor-pointer"
         onClick={() => handleReaction("dislike")}
-        disabled={isPending}
+        // disabled={isPending}
       >
         <ThumbsDownIcon
           className={cn(

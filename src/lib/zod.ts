@@ -66,3 +66,10 @@ export const videoUpdateSchema = object({
 });
 
 
+export const commentSchema = z.object({
+  videoId: z.string().uuid({ message: "Invalid video ID" }),
+  content: z
+    .string()
+    .min(1, "Comment cannot be empty")
+    .max(1000, "Comment is too long"),
+});

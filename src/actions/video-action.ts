@@ -4,8 +4,9 @@ import { getUser } from "@/lib/auth-session";
 import db from "@/lib/prisma";
 import { z } from "zod";
 import Mux from "@mux/mux-node";
-import { Dislike, Like, User, Video } from "@prisma/client";
+import { Dislike, Like, User, Video, Comment } from "@prisma/client";
 import { revalidatePath } from "next/cache";
+import { commentSchema } from "@/lib/zod";
 
 const mux = new Mux({
   tokenId: process.env.MUX_TOKEN_ID!,
@@ -46,8 +47,6 @@ export async function createVideo() {
   }
 }
 
-
-
 export async function getUserVideos(): Promise<Video[]> {
   const user = await getUser();
   if (!user) {
@@ -68,10 +67,6 @@ export async function getUserVideos(): Promise<Video[]> {
 }
 
 
-export interface VideoWithUser extends Video {
-  user: User;
-}
-
 export async function getVideoById(videoId: string): Promise<VideoWithUser | null> {
   // const user = await getUser();
   // if (!user) {
@@ -85,10 +80,12 @@ export async function getVideoById(videoId: string): Promise<VideoWithUser | nul
         user: true,
         likes: true,
         dislikes: true,
+        comments: true,
         _count: {
           select: {
             likes: true,
             dislikes: true,
+            comments: true,
           },
         },
       },
@@ -377,26 +374,18 @@ export const toggleSubscription = async (rawInput: unknown) => {
 };
 
 
-export interface VideoWithUser extends Video {
-  user: User;
-  likes: Like[];
-  dislikes: Dislike[];
-  _count: {
-    likes: number;
-    dislikes: number;
-  };
-}
-
 export async function videosWithLikesDetails(): Promise<VideoWithUser[]> {
   const videos = await db.video.findMany({
     include: {
       user: true,
       likes: true,
       dislikes: true,
+      comments: true,
       _count: {
         select: {
           likes: true,
           dislikes: true,
+          comments: true,
         },
       },
     },
@@ -498,4 +487,45 @@ export async function dislikeVideoAction(videoId: string) {
   }
 
   revalidatePath(`/videos/${videoId}`);
+}
+
+
+
+
+
+export interface VideoWithUser extends Video {
+  user: User;
+  likes: Like[];
+  dislikes: Dislike[];
+  comments: Comment[];
+  _count: {
+    likes: number;
+    dislikes: number;
+    comments: number;
+  };
+}
+
+
+export async function addComment(videoId: string, content: string) {
+  const user = await getUser();
+  if (!user) {
+    throw new Error("Unauthorized");
+  }
+
+  const parsed = commentSchema.safeParse({ videoId, content });
+  if (!parsed.success) {
+    throw new Error(parsed.error.errors[0]?.message || "Invalid input");
+  }
+
+  const { videoId: validVideoId, content: validContent } = parsed.data;
+
+  const newComment = await db.comment.create({
+    data: {
+      content: validContent,
+      videoId: validVideoId,
+      userId: user.id,
+    },
+  });
+
+  return newComment;
 }

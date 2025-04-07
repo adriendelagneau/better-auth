@@ -18,11 +18,12 @@ model User {
   sessions      Session[]
   accounts      Account[]
   videos        Video[]
-  likes        Like[]
-   dislikes Dislike[]  // 👈 Add this
+  likes         Like[]
+  dislikes      Dislike[] // 👈 Add this
+  comments      Comment[]
 
-  viewerSubscriptions  Subscription[] @relation("ViewerSubscriptions")
-  creatorSubscribers   Subscription[] @relation("CreatorSubscribers")
+  viewerSubscriptions Subscription[] @relation("ViewerSubscriptions")
+  creatorSubscribers  Subscription[] @relation("CreatorSubscribers")
 
   @@map("user")
 }
@@ -88,6 +89,7 @@ enum VideoVisibility {
   private
   public
 }
+
 model Video {
   id             String          @id @default(uuid()) // Automatically generate the UUID
   title          String
@@ -107,15 +109,17 @@ model Video {
   userId         String
   categoryId     String?
 
-  videoViews Int @default(0)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  videoViews Int      @default(0)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
 
   user     User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   category Category? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
 
-  likes    Like[]    // Add a relation to the Like model
- dislikes Dislike[]  // 👈 Add this
+  likes    Like[] // Add a relation to the Like model
+  dislikes Dislike[] // 👈 Add this
+  comments Comment[] // 👈 Add thi
+
   @@map("video") // The table name in the database
 }
 
@@ -126,13 +130,12 @@ model Like {
   createdAt DateTime @default(now()) // When the like was created
   updatedAt DateTime @updatedAt // When the like was last updated
 
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  video     Video    @relation(fields: [videoId], references: [id], onDelete: Cascade)
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  video Video @relation(fields: [videoId], references: [id], onDelete: Cascade)
 
   @@unique([userId, videoId]) // Ensure a user can like a video only once
   @@map("like") // The table name in the database
 }
-
 
 model Dislike {
   id        String   @id @default(uuid())
@@ -141,8 +144,8 @@ model Dislike {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  video     Video    @relation(fields: [videoId], references: [id], onDelete: Cascade)
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  video Video @relation(fields: [videoId], references: [id], onDelete: Cascade)
 
   @@unique([userId, videoId])
   @@map("dislike")
@@ -154,12 +157,23 @@ model Subscription {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  viewer   User @relation("ViewerSubscriptions", fields: [viewerId], references: [id], onDelete: Cascade)
-  creator  User @relation("CreatorSubscribers", fields: [creatorId], references: [id], onDelete: Cascade)
+  viewer  User @relation("ViewerSubscriptions", fields: [viewerId], references: [id], onDelete: Cascade)
+  creator User @relation("CreatorSubscribers", fields: [creatorId], references: [id], onDelete: Cascade)
 
   @@id([viewerId, creatorId]) // Composite primary key
   @@map("subscription")
 }
 
+model Comment {
+  id        String   @id @default(uuid()) // Automatically generate the UUID
+  userId    String
+  videoId   String
+  content   String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  video Video @relation(fields: [videoId], references: [id], onDelete: Cascade)
 
+  @@map("comment") // The table name in the database
+}

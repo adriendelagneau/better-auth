@@ -25,7 +25,7 @@ const Page = async ({ params }: PageProps) => {
           <div className="xl:hidden block mt-4">
             <SuggestionSection/>
           </div>
-          <CommentSection/>
+          <CommentSection video={video}/>
         </div>
         <div className="hidden xl:block w-full xl:w-[380px] 2xl:w-[460px] shrink-1">
           <SuggestionSection/>
