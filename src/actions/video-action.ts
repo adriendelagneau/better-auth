@@ -4,7 +4,7 @@ import { getUser } from "@/lib/auth-session";
 import db from "@/lib/prisma";
 import { z } from "zod";
 import Mux from "@mux/mux-node";
-import { User, Video } from "@prisma/client";
+import { Dislike, Like, User, Video } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 
 const mux = new Mux({
@@ -80,15 +80,30 @@ export async function getVideoById(videoId: string): Promise<VideoWithUser | nul
 
   try {
     const video = await db.video.findUnique({
-      where: { id: videoId }, // Remove `userId: user.id` if you want to allow fetching all videos
-      include: { user: true }, // ✅ Ensure user data is included
+      where: { id: videoId }, // Ensure you’re finding the correct video
+      include: {
+        user: true,
+        likes: true,
+        dislikes: true,
+        _count: {
+          select: {
+            likes: true,
+            dislikes: true,
+          },
+        },
+      },
     });
 
     if (!video) {
       throw new Error("Video not found");
     }
 
-    return video as VideoWithUser; // ✅ Explicitly tell TypeScript that `user` exists
+    // Add the _count field to the VideoWithUser type
+    return {
+      ...video,
+      _count: video._count, // Ensure the counts are included
+    } as VideoWithUser; // Cast to VideoWithUser type
+
   } catch (error) {
     console.error("Error fetching video:", error);
     throw new Error("Failed to fetch video");
@@ -360,3 +375,127 @@ export const toggleSubscription = async (rawInput: unknown) => {
     return { status: "subscribed" };
   }
 };
+
+
+export interface VideoWithUser extends Video {
+  user: User;
+  likes: Like[];
+  dislikes: Dislike[];
+  _count: {
+    likes: number;
+    dislikes: number;
+  };
+}
+
+export async function videosWithLikesDetails(): Promise<VideoWithUser[]> {
+  const videos = await db.video.findMany({
+    include: {
+      user: true,
+      likes: true,
+      dislikes: true,
+      _count: {
+        select: {
+          likes: true,
+          dislikes: true,
+        },
+      },
+    },
+  });
+
+  return videos;
+}
+
+
+
+
+
+
+export async function likeVideoAction(videoId: string) {
+  const user = await getUser();
+  if (!user) {
+    throw new Error("Unauthorized");
+  }
+
+  const userId = user.id;
+
+  const existingLike = await db.like.findUnique({
+    where: {
+      userId_videoId: {
+        userId,
+        videoId,
+      },
+    },
+  });
+
+  const existingDislike = await db.dislike.findUnique({
+    where: {
+      userId_videoId: {
+        userId,
+        videoId,
+      },
+    },
+  });
+
+  // Toggle like
+  if (existingLike) {
+    await db.like.delete({
+      where: { userId_videoId: { userId, videoId } },
+    });
+  } else {
+    if (existingDislike) {
+      await db.dislike.delete({
+        where: { userId_videoId: { userId, videoId } },
+      });
+    }
+    await db.like.create({
+      data: { userId, videoId },
+    });
+  }
+  revalidatePath(`/videos/${videoId}`);
+}
+
+
+export async function dislikeVideoAction(videoId: string) {
+  const user = await getUser();
+  if (!user) {
+    throw new Error("Unauthorized");
+  }
+
+  const userId = user.id;
+
+  const existingDislike = await db.dislike.findUnique({
+    where: {
+      userId_videoId: {
+        userId,
+        videoId,
+      },
+    },
+  });
+
+  const existingLike = await db.like.findUnique({
+    where: {
+      userId_videoId: {
+        userId,
+        videoId,
+      },
+    },
+  });
+
+  // Toggle dislike
+  if (existingDislike) {
+    await db.dislike.delete({
+      where: { userId_videoId: { userId, videoId } },
+    });
+  } else {
+    if (existingLike) {
+      await db.like.delete({
+        where: { userId_videoId: { userId, videoId } },
+      });
+    }
+    await db.dislike.create({
+      data: { userId, videoId },
+    });
+  }
+
+  revalidatePath(`/videos/${videoId}`);
+}

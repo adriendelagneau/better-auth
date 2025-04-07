@@ -1,22 +1,16 @@
-import { Suspense } from "react";
-import { GetCategory } from "@/actions/caterogy-action";
-import FilterCarousel from "@/components/filter-carousel";
 
+import {  videosWithLikesDetails } from "@/actions/video-action";
+import TestComponent from "@/components/test-component";
 
 const HomePage = async () => {
 
+  const videos = await videosWithLikesDetails();
 
-
-  const categories = await GetCategory();
 
 
   return (
     <div>
-      <Suspense fallback={<div>Loading filters...</div>}>
-        <FilterCarousel categories={categories} />
-      </Suspense>
-
-
+      <TestComponent videos={videos}/>
     </div>
   );
 };

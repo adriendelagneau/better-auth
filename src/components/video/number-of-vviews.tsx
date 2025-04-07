@@ -11,7 +11,7 @@ interface NumberOfViewsProps {
 const NumberOfViews = ({numberOfViews}: NumberOfViewsProps) => {
 
 
-    console.log(numberOfViews);
+
 
   return (
     <span className="font-medium">{millify(numberOfViews)} views</span>
