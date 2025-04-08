@@ -1,6 +1,6 @@
 "use client";
 
-import { VideoWithUser } from "@/actions/video-action";
+import { addComment, VideoWithUser } from "@/actions/video-action";
 
 import React from "react";
 import UserAvatar from "../studio/user-avatar";
@@ -31,7 +31,12 @@ const CommentForm = ({ video }: CommentFormProps) => {
   });
 
   const handleSubmit = async (values: z.infer<typeof commentSchema>) => {
-    console.log(values);
+ try {
+   addComment(values.videoId, values.content);
+
+ }catch(err) {
+  console.log(err);
+ }
   };
 
   return (
@@ -41,7 +46,7 @@ const CommentForm = ({ video }: CommentFormProps) => {
         className="group flex gap-4"
       >
         <UserAvatar
-          imageUrl={user?.image || "/drtdtrd.png"}
+          imageUrl={user?.image || "/default-avatar.png"}
           size={"lg"}
           name={user?.name || "User"}
         />
