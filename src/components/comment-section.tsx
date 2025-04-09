@@ -1,4 +1,5 @@
-import { VideoWithUser } from "@/actions/video-action";
+
+import { VideoWithUser } from "@/app/types";
 import CommentForm from "./video/comment-form";
 import CommentItem from "./video/comment-item";
 
@@ -7,6 +8,8 @@ interface CommentSectionProps {
 }
 
 const CommentSection = ({ video }: CommentSectionProps) => {
+
+
   return (
     <div className="mt-6">
       <div className="flex flex-col gap-6">
@@ -16,7 +19,8 @@ const CommentSection = ({ video }: CommentSectionProps) => {
         <CommentForm video={video} />
 
         {video.comments.map((comment, i) => (
-          <CommentItem key={i} comment={comment}/>
+
+        <CommentItem key={i} comment={comment}/>
         ))}
       </div>
     </div>

@@ -1,3 +1,18 @@
+import { Dislike, Like, User, Video } from "@prisma/client";
+
+export interface VideoWithUser extends Video {
+    user: User;
+    likes: Like[];
+    dislikes: Dislike[];
+    comments: Comment[];
+    _count: {
+      likes: number;
+      dislikes: number;
+      comments: number;
+    };
+  }
+  
+
 export interface Comment {
     id: string;
     content: string;
@@ -35,4 +50,48 @@ export interface Comment {
       commentDislikes: number;
     };
   }
+  
+//   export interface VideoWithUser {
+//     id: string;
+//     name: string;
+//     description: string;
+//     createdAt: Date;
+//     updatedAt: Date;
+//     userId: string;
+//     user: {
+//       id: string;
+//       name: string | null;
+//       email: string;
+//       image: string | null;
+//       createdAt: Date;
+//       updatedAt: Date;
+//     };
+//     likes: { id: string; userId: string; videoId: string }[];
+//     dislikes: { id: string; userId: string; videoId: string }[];
+//     comments: {
+//       id: string;
+//       content: string;
+//       createdAt: Date;
+//       updatedAt: Date;
+//       userId: string;
+//       videoId: string;
+//       user: {
+//         id: string;
+//         name: string | null;
+//         email: string;
+//         image: string | null;
+//       };
+//       commentLikes: { userId: string }[];
+//       commentDislikes: { userId: string }[];
+//       _count: {
+//         commentLikes: number;
+//         commentDislikes: number;
+//       };
+//     }[];
+//     _count: {
+//       likes: number;
+//       dislikes: number;
+//       comments: number;
+//     };
+//   }
   

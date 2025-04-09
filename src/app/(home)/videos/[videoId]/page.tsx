@@ -16,7 +16,7 @@ const Page = async ({ params }: PageProps) => {
   if (!video) return null;
   
 
-  console.log(video)
+
 
   return (
     <>

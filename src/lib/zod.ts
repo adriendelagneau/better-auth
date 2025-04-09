@@ -74,3 +74,7 @@ export const commentSchema = z.object({
     .max(1000, "Comment is too long"),
 });
 
+export const videoIdSchema = z.object({
+  videoId: z.string().uuid() 
+});
+

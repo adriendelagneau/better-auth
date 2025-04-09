@@ -14,36 +14,15 @@ import { Button } from "../ui/button";
 import { MessageSquareIcon, MoreVerticalIcon, Trash2Icon } from "lucide-react";
 import { authClient } from "@/lib/auth-client";
 import { deleteComment } from "@/actions/video-action";
-import CommentReactions from "./comment-reactions";
+import { Comment } from "@/app/types";
+
 
 interface CommentItemProps {
-  comment: {
-    id: string;
-    userId: string;
-    videoId: string;
-    content: string;
-    createdAt: string | Date;
-    updatedAt: string | Date;
-    user: {
-      id: string;
-      email: string;
-      name: string | null;
-      emailVerified: boolean;
-      image: string | null;
-      createdAt: string | Date;
-      updatedAt: string | Date;
-    };
-    commentLikes: { userId: string }[];
-    commentDislikes: { userId: string }[];
-    _count: {
-      commentLikes: number;
-      commentDislikes: number;
-    };
-  };
+  comment: Comment
 }
 
 const CommentItem = ({ comment: initialComment }: CommentItemProps) => {
-  const [comment, setComment] = useState(initialComment);
+  const [comment] = useState(initialComment);
   const { data: session } = authClient.useSession();
   const userId = session?.user.id;
 
@@ -60,7 +39,7 @@ const CommentItem = ({ comment: initialComment }: CommentItemProps) => {
     });
   };
 
-  console.log(comment)
+
 
   return (
     <div>

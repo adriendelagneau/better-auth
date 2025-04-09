@@ -1,6 +1,6 @@
 "use client";
 
-import { addComment, VideoWithUser } from "@/actions/video-action";
+import { addComment } from "@/actions/video-action";
 
 import React from "react";
 import UserAvatar from "../studio/user-avatar";
@@ -12,6 +12,7 @@ import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Form, FormField } from "../ui/form";
 import { commentSchema } from "@/lib/zod";
+import { VideoWithUser } from "@/app/types";
 
 interface CommentFormProps {
   video: VideoWithUser;
