@@ -5,25 +5,24 @@ import { Button } from "../ui/button";
 import { ThumbsDownIcon, ThumbsUpIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Separator } from "../ui/separator";
-import { VideoWithUser } from "@/actions/video-action";
+import { VideoWithUser } from "@/app/types";
 import { authClient } from "@/lib/auth-client";
-import { likeVideoAction } from "@/actions/video-action"; 
-import { dislikeVideoAction } from "@/actions/video-action"; 
+import { likeVideoAction } from "@/actions/video-action";
+import { dislikeVideoAction } from "@/actions/video-action";
 
 interface VideoReactionsProps {
   video: VideoWithUser;
 }
 
 const VideoReactions = ({ video }: VideoReactionsProps) => {
-
   const { data: session } = authClient.useSession();
   const user = session?.user;
 
-  const viewerReaction = video.likes.some(l => l.userId === user?.id)
+  const viewerReaction = video.likes.some((l) => l.userId === user?.id)
     ? "like"
-    : video.dislikes.some(d => d.userId === user?.id)
-    ? "dislike"
-    : null;
+    : video.dislikes.some((d) => d.userId === user?.id)
+      ? "dislike"
+      : null;
 
   const [isPending, startTransition] = useTransition();
   console.log(isPending);
@@ -41,8 +40,12 @@ const VideoReactions = ({ video }: VideoReactionsProps) => {
         return {
           ...state,
           reaction: null,
-          likeCount: newReaction === "like" ? state.likeCount - 1 : state.likeCount,
-          dislikeCount: newReaction === "dislike" ? state.dislikeCount - 1 : state.dislikeCount,
+          likeCount:
+            newReaction === "like" ? state.likeCount - 1 : state.likeCount,
+          dislikeCount:
+            newReaction === "dislike"
+              ? state.dislikeCount - 1
+              : state.dislikeCount,
         };
       }
 
@@ -52,38 +55,38 @@ const VideoReactions = ({ video }: VideoReactionsProps) => {
           newReaction === "like"
             ? state.likeCount + 1
             : state.reaction === "like"
-            ? state.likeCount - 1
-            : state.likeCount,
+              ? state.likeCount - 1
+              : state.likeCount,
         dislikeCount:
           newReaction === "dislike"
             ? state.dislikeCount + 1
             : state.reaction === "dislike"
-            ? state.dislikeCount - 1
-            : state.dislikeCount,
+              ? state.dislikeCount - 1
+              : state.dislikeCount,
       };
     }
   );
 
   const handleReaction = (type: "like" | "dislike") => {
     // Start the transition, which will include the state update inside
-    startTransition(() => {
+    startTransition(async() => {
       // Optimistically update the reaction state
-      updateOptimisticState(type);
-      
+    updateOptimisticState(type);
+
       // Perform the actual server-side action
       if (type === "like") {
-        likeVideoAction(video.id);
+        await  likeVideoAction(video.id);
       } else {
-        dislikeVideoAction(video.id);
+        await   dislikeVideoAction(video.id);
       }
     });
   };
 
   return (
-    <div className="flex items-center flex-none">
+    <div className="flex flex-none items-center">
       <Button
         variant="secondary"
-        className="rounded-full rounded-r-none gap-2 pr-4 cursor-pointer"
+        className="cursor-pointer gap-2 rounded-full rounded-r-none pr-4"
         onClick={() => handleReaction("like")}
         // disabled={isPending}
       >
@@ -98,14 +101,16 @@ const VideoReactions = ({ video }: VideoReactionsProps) => {
       <Separator orientation="vertical" className="h-7" />
       <Button
         variant="secondary"
-        className="rounded-full rounded-l-none pl-3 cursor-pointer"
+        className="cursor-pointer rounded-full rounded-l-none pl-3"
         onClick={() => handleReaction("dislike")}
         // disabled={isPending}
       >
         <ThumbsDownIcon
           className={cn(
             "size-5",
-            optimisticState.reaction === "dislike" ? "fill-black" : "text-gray-500"
+            optimisticState.reaction === "dislike"
+              ? "fill-black"
+              : "text-gray-500"
           )}
         />
         {optimisticState.dislikeCount}

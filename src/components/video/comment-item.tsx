@@ -14,11 +14,12 @@ import { Button } from "../ui/button";
 import { MessageSquareIcon, MoreVerticalIcon, Trash2Icon } from "lucide-react";
 import { authClient } from "@/lib/auth-client";
 import { deleteComment } from "@/actions/video-action";
-import { Comment } from "@/app/types";
+import { FullComment } from "@/app/types";
+import CommentReactions from "./comment-reactions";
 
 
 interface CommentItemProps {
-  comment: Comment
+  comment: FullComment
 }
 
 const CommentItem = ({ comment: initialComment }: CommentItemProps) => {
@@ -64,7 +65,7 @@ const CommentItem = ({ comment: initialComment }: CommentItemProps) => {
           </div>
 
           <p className="text-sm">{comment.content}</p>
-          {/* <CommentReactions comment={comment} onUpdate={setComment} /> */}
+          <CommentReactions comment={comment} />
         </div>
 
         <DropdownMenu modal={false}>

@@ -10,38 +10,23 @@ import {
   likeCommentAction,
   dislikeCommentAction,
 } from "@/actions/video-action";
-import { User } from "@prisma/client";
+
+import { FullComment } from "@/app/types";
 
 interface CommentReactionsProps {
-  comment: {
-    id: string;
-    userId: string;
-    videoId: string;
-    content: string;
-    createdAt: string | Date;
-    updatedAt: string | Date;
-    user: User;
-    commentLikes: { userId: string }[];
-    commentDislikes: { userId: string }[];
-    _count: {
-      commentLikes: number;
-      commentDislikes: number;
-    };
-  };
-  onUpdate?: (updated: CommentReactionsProps["comment"]) => void;
+  comment: FullComment;
 }
 
-const CommentReactions = ({ comment, onUpdate }: CommentReactionsProps) => {
+const CommentReactions = ({ comment }: CommentReactionsProps) => {
+
   const { data: session } = authClient.useSession();
   const user = session?.user;
 
-  const viewerReaction = comment.commentLikes.some(
-    (l) => l.userId === user?.id
-  )
+  const viewerReaction = comment.commentLikes.some((l) => l.userId === user?.id)
     ? "like"
     : comment.commentDislikes.some((d) => d.userId === user?.id)
-    ? "dislike"
-    : null;
+      ? "dislike"
+      : null;
 
   const [, startTransition] = useTransition();
 
@@ -73,36 +58,41 @@ const CommentReactions = ({ comment, onUpdate }: CommentReactionsProps) => {
           newReaction === "like"
             ? state.likeCount + 1
             : state.reaction === "like"
-            ? state.likeCount - 1
-            : state.likeCount,
+              ? state.likeCount - 1
+              : state.likeCount,
         dislikeCount:
           newReaction === "dislike"
             ? state.dislikeCount + 1
             : state.reaction === "dislike"
-            ? state.dislikeCount - 1
-            : state.dislikeCount,
+              ? state.dislikeCount - 1
+              : state.dislikeCount,
       };
     }
   );
 
   const handleReaction = (type: "like" | "dislike") => {
-    startTransition(() => {
+    // Start the transition, which will include the state update inside
+    startTransition(async() => {
+      // Optimistically update the reaction state
       updateOptimisticState(type);
-
-      const action = type === "like" ? likeCommentAction : dislikeCommentAction;
-
-      action(comment.id, comment.videoId).then((updatedComment) => {
-        if (onUpdate) onUpdate(updatedComment);
-      });
+      
+      // Perform the actual server-side action
+      if (type === "like") {
+       await likeCommentAction(comment.id, comment.videoId);
+      } else {
+       await dislikeCommentAction(comment.id, comment.videoId);
+      }
     });
   };
 
+
   return (
-    <div className="mt-2 flex items-center">
+    <div className="flex flex-none items-center">
       <Button
-        variant="ghost"
-        className="gap-2 rounded-full rounded-r-none pr-4"
+        variant="secondary"
+        className="cursor-pointer gap-2 rounded-full rounded-r-none pr-4"
         onClick={() => handleReaction("like")}
+        // disabled={isPending}
       >
         <ThumbsUpIcon
           className={cn(
@@ -112,11 +102,12 @@ const CommentReactions = ({ comment, onUpdate }: CommentReactionsProps) => {
         />
         {optimisticState.likeCount}
       </Button>
-      <Separator orientation="vertical" className="h-5" />
+      <Separator orientation="vertical" className="h-7" />
       <Button
-        variant="ghost"
-        className="rounded-full rounded-l-none pl-3"
+        variant="secondary"
+        className="cursor-pointer rounded-full rounded-l-none pl-3"
         onClick={() => handleReaction("dislike")}
+        // disabled={isPending}
       >
         <ThumbsDownIcon
           className={cn(
@@ -131,5 +122,4 @@ const CommentReactions = ({ comment, onUpdate }: CommentReactionsProps) => {
     </div>
   );
 };
-
 export default CommentReactions;

@@ -484,7 +484,7 @@ export async function getCommentsByVideoId(videoId: string) {
 
 
 
-export async function likeCommentAction(commentId: string) {
+export async function likeCommentAction(commentId: string, videoId: string) {
   const user = await getUser();
   if (!user) {
     throw new Error("Unauthorized");
@@ -514,6 +514,8 @@ export async function likeCommentAction(commentId: string) {
     await db.commentLike.delete({
       where: { userId_commentId: { userId, commentId } },
     });
+
+
   } else {
     if (existingDislike) {
       await db.commentDislike.delete({
@@ -523,13 +525,15 @@ export async function likeCommentAction(commentId: string) {
     await db.commentLike.create({
       data: { userId, commentId },
     });
-  }
 
-  revalidatePath(`/comments/${commentId}`);
+
+  }
+  revalidatePath(`/videos/${videoId}`);
+
 }
 
 
-export async function dislikeCommentAction(commentId: string) {
+export async function dislikeCommentAction(commentId: string, videoId: string) {
   const user = await getUser();
   if (!user) {
     throw new Error("Unauthorized");
@@ -564,13 +568,17 @@ export async function dislikeCommentAction(commentId: string) {
       await db.commentLike.delete({
         where: { userId_commentId: { userId, commentId } },
       });
+
+
     }
     await db.commentDislike.create({
       data: { userId, commentId },
     });
+ 
   }
 
-  revalidatePath(`/comments/${commentId}`);
+  revalidatePath(`/videos/${videoId}`);
+
 }
 
 
