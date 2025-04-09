@@ -8,19 +8,21 @@ datasource db {
 }
 
 model User {
-  id            String    @id
-  email         String    @unique
-  name          String?
-  emailVerified Boolean
-  image         String?
-  createdAt     DateTime
-  updatedAt     DateTime
-  sessions      Session[]
-  accounts      Account[]
-  videos        Video[]
-  likes         Like[]
-  dislikes      Dislike[] // 👈 Add this
-  comments      Comment[]
+  id              String           @id
+  email           String           @unique
+  name            String?
+  emailVerified   Boolean
+  image           String?
+  createdAt       DateTime
+  updatedAt       DateTime
+  sessions        Session[]
+  accounts        Account[]
+  videos          Video[]
+  likes           Like[]
+  dislikes        Dislike[]
+  comments        Comment[]
+  commentLikes    CommentLike[]
+  commentDislikes CommentDislike[]
 
   viewerSubscriptions Subscription[] @relation("ViewerSubscriptions")
   creatorSubscribers  Subscription[] @relation("CreatorSubscribers")
@@ -74,7 +76,7 @@ model Verification {
 }
 
 model Category {
-  id          String   @id @default(uuid()) // Automatically generate the UUID
+  id          String   @id @default(uuid())
   name        String   @unique
   description String?
   createdAt   DateTime @default(now())
@@ -91,7 +93,7 @@ enum VideoVisibility {
 }
 
 model Video {
-  id             String          @id @default(uuid()) // Automatically generate the UUID
+  id             String          @id @default(uuid()) 
   title          String
   description    String?
   muxStatus      String?
@@ -104,8 +106,8 @@ model Video {
   thumbnailKey   String?
   previewUrl     String?
   previewKey     String?
-  duration       Int             @default(0) // Duration in seconds
-  visibility     VideoVisibility @default(private) // Enum used here
+  duration       Int             @default(0) 
+  visibility     VideoVisibility @default(private) 
   userId         String
   categoryId     String?
 
@@ -116,25 +118,25 @@ model Video {
   user     User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   category Category? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
 
-  likes    Like[] // Add a relation to the Like model
-  dislikes Dislike[] // 👈 Add this
-  comments Comment[] // 👈 Add thi
+  likes    Like[]
+  dislikes Dislike[] 
+  comments Comment[] 
 
-  @@map("video") // The table name in the database
+  @@map("video") 
 }
 
 model Like {
-  id        String   @id @default(uuid()) // Automatically generate the UUID
+  id        String   @id @default(uuid())
   userId    String
   videoId   String
-  createdAt DateTime @default(now()) // When the like was created
-  updatedAt DateTime @updatedAt // When the like was last updated
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt 
 
   user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
   video Video @relation(fields: [videoId], references: [id], onDelete: Cascade)
 
-  @@unique([userId, videoId]) // Ensure a user can like a video only once
-  @@map("like") // The table name in the database
+  @@unique([userId, videoId])
+  @@map("like")
 }
 
 model Dislike {
@@ -160,12 +162,12 @@ model Subscription {
   viewer  User @relation("ViewerSubscriptions", fields: [viewerId], references: [id], onDelete: Cascade)
   creator User @relation("CreatorSubscribers", fields: [creatorId], references: [id], onDelete: Cascade)
 
-  @@id([viewerId, creatorId]) // Composite primary key
+  @@id([viewerId, creatorId]) 
   @@map("subscription")
 }
 
 model Comment {
-  id        String   @id @default(uuid()) // Automatically generate the UUID
+  id        String   @id @default(uuid())
   userId    String
   videoId   String
   content   String
@@ -175,5 +177,36 @@ model Comment {
   user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
   video Video @relation(fields: [videoId], references: [id], onDelete: Cascade)
 
-  @@map("comment") // The table name in the database
+  commentLikes    CommentLike[]
+  commentDislikes CommentDislike[]
+
+  @@map("comment")
+}
+
+model CommentLike {
+  id        String   @id @default(uuid())
+  userId    String
+  commentId String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  comment Comment @relation(fields: [commentId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, commentId])
+  @@map("comment_like")
+}
+
+model CommentDislike {
+  id        String   @id @default(uuid())
+  userId    String
+  commentId String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  comment Comment @relation(fields: [commentId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, commentId])
+  @@map("comment_dislike")
 }

@@ -65,22 +65,27 @@ export async function getUserVideos(): Promise<Video[]> {
     throw new Error("Failed to fetch videos");
   }
 }
-
-
 export async function getVideoById(videoId: string): Promise<VideoWithUser | null> {
-  // const user = await getUser();
-  // if (!user) {
-  //   throw new Error("Unauthorized");
-  // }
-
   try {
     const video = await db.video.findUnique({
-      where: { id: videoId }, // Ensure you’re finding the correct video
+      where: { id: videoId },
       include: {
         user: true,
         likes: true,
         dislikes: true,
-        comments: true,
+        comments: {
+          include: {
+            user: true,
+            commentLikes: true,
+            commentDislikes: true,
+            _count: {
+              select: {
+                commentLikes: true,
+                commentDislikes: true,
+              },
+            },
+          },
+        },
         _count: {
           select: {
             likes: true,
@@ -95,19 +100,13 @@ export async function getVideoById(videoId: string): Promise<VideoWithUser | nul
       throw new Error("Video not found");
     }
 
-    // Add the _count field to the VideoWithUser type
-    return {
-      ...video,
-      _count: video._count, // Ensure the counts are included
-    } as VideoWithUser; // Cast to VideoWithUser type
-
+    return video as VideoWithUser;
   } catch (error) {
     console.error("Error fetching video:", error);
     throw new Error("Failed to fetch video");
   }
 }
 
-// ✅ Update Video
 export async function updateVideo(
   videoId: string,
   data: {
@@ -140,7 +139,6 @@ export async function updateVideo(
   }
 }
 
-// ✅ Remove Video
 export async function removeVideo(videoId: string) {
   const user = await getUser();
   if (!user) {
@@ -169,6 +167,7 @@ export async function updateVideoThumbnail(videoId: string, thumbnailUrl: string
     throw new Error("Failed to update video thumbnail");
   }
 }
+
 export async function getFilteredVideos({
   cursor,
   limit = 10,
@@ -527,5 +526,70 @@ export async function addComment(videoId: string, content: string) {
     },
   });
 
+  revalidatePath(`/videos/${videoId}`);
   return newComment;
+}
+
+// actions/comments-actions.ts
+export async function deleteComment(commentId: string) {
+  const user = await getUser(); // Get the currently logged-in user
+
+  if (!user) {
+    throw new Error("Unauthorized");
+  }
+
+  // Fetch the comment to ensure the user is the owner
+  const comment = await db.comment.findUnique({
+    where: { id: commentId },
+  });
+
+  if (!comment) {
+    throw new Error("Comment not found");
+  }
+
+  // Check if the current user is the owner of the comment
+  if (comment.userId !== user.id) {
+    throw new Error("You can only delete your own comments");
+  }
+
+  try {
+    // If the user is authorized, delete the comment
+    await db.comment.delete({
+      where: { id: commentId },
+    });
+
+    revalidatePath(`/videos/${comment.videoId}`);
+    return { success: true };
+  } catch (error) {
+    console.error("Failed to delete comment:", error);
+    return { success: false, error: error instanceof Error ? error.message : "An unknown error occurred" };
+  }
+}
+
+
+
+
+export async function getCommentsByVideoId(videoId: string) {
+  try {
+    const comments = await db.comment.findMany({
+      where: { videoId },
+      orderBy: {
+        createdAt: "desc", // latest first
+      },
+      include: {
+        user: {
+          select: {
+            id: true,
+            name: true,
+            image: true,
+          },
+        },
+      },
+    });
+
+    return comments;
+  } catch (error) {
+    console.error("Failed to fetch comments:", error);
+    return [];
+  }
 }

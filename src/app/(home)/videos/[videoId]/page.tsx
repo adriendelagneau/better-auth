@@ -14,6 +14,9 @@ const Page = async ({ params }: PageProps) => {
 
   const video = await getVideoById(videoId);
   if (!video) return null;
+  
+
+  console.log(video)
 
   return (
     <>
