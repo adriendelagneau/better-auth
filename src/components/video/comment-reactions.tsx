@@ -28,7 +28,9 @@ const CommentReactions = ({ comment }: CommentReactionsProps) => {
       ? "dislike"
       : null;
 
-  const [, startTransition] = useTransition();
+
+  const [isPending, startTransition] = useTransition();
+  console.log(isPending);
 
   const [optimisticState, updateOptimisticState] = useOptimistic(
     {

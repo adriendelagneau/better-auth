@@ -1,6 +1,6 @@
 import React from "react";
 import VideoOwner from "./video-owner";
-import { VideoWithUser } from "@/actions/video-action";
+import { VideoWithUser } from "@/app/types"; 
 import VideoReactions from "./video-reactions";
 import VideoMenu from "./video-menu";
 import VideoDescription from "./video-description";

@@ -18,6 +18,8 @@ const CommentSection = ({ video }: CommentSectionProps) => {
         </h1>
         <CommentForm video={video} />
 
+        
+
         {video.comments.map((comment, i) => (
 
         <CommentItem key={i} comment={comment}/>

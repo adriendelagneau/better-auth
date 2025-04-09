@@ -5,7 +5,8 @@ import React from "react";
 import VideoPlayer from "../studio/video-player";
 import VideoBanner from "./video-banner";
 import VideoTopRow from "./video-top-row";
-import { incrementVideoView, VideoWithUser } from "@/actions/video-action";
+import { incrementVideoView } from "@/actions/video-action";
+import { VideoWithUser } from "@/app/types";
 
 
 interface VideoSectionProps {

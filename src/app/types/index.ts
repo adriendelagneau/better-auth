@@ -4,7 +4,7 @@ export interface VideoWithUser extends Video {
     user: User;
     likes: Like[];
     dislikes: Dislike[];
-    comments: Comment[];
+    comments: FullComment[];
     _count: {
       likes: number;
       dislikes: number;
